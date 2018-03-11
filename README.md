@@ -1,4 +1,4 @@
-# SREENPY
+# SCREENPY
 
 What is **ScreenPy**?
 
@@ -16,7 +16,7 @@ $ git clone https://github.com/iUnro/ScreenPy.git
 -  Run the installation script.
 ```bash
 $ cd ScreenPy
-$ python setup.py install
+$ sudo python setup.py install
 ```
 - Configure SceenPy config file.
 ```bash
