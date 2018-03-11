@@ -1,0 +1,170 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  SCREENPY
+#  A more or less easy to use utility to push your screenshots to the your Dropbox account.
+#  If everything will go well you will end up with a static link to the screenshot in your clipboard.
+#  
+#  Copyright 2018 Aleksey Slucenko <dev@oleksa.me>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#  
+#  
+
+import os
+import sys
+import glob
+import json
+import dropbox
+from time import gmtime, strftime
+
+class Screenpy:
+    
+    TOKEN= ''   # Dropbox OAuth2 access token; --> https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account/
+    DBOXPATH = ''   # Path in Dropbox where screenshots will be stored.
+    LOCALPATH = ''  # Path in local directory where screenshots are being saved by default.
+    LOG = ''    # Do we log out actions to STDOUT or do we not.
+    FILE = ''   # This stores path to the file which we are gonna push to the dropbox.
+    dbx = ''    # A Dropbox object.
+    
+    def __init__(self):
+        self.TOKEN = self.__readConfig("token")
+        self.DBOXPATH = self.__readConfig("dboxpath")
+        self.LOCALPATH = self.__readConfig("localpath")
+        self.LOG = self.__readConfig("log")
+    
+    def __readConfig(self, option):
+        HOME = os.path.expanduser("~")
+        
+        try:
+            # Does configuration file even exists?
+            config = open(HOME + "/.screenpy.js","r")
+        except:
+            sys.exit("ERROR: Can't open configuration file: " + HOME + "/.screenpy.js")
+        
+        data = json.loads(config.read())
+        config.close()        
+        return data[option]
+    
+    def __authorize(self):
+        self.dbx = dropbox.Dropbox(self.TOKEN)
+        try:
+            # Trying to get the information about the current user. It's the easiest way to check if the token is entered correctly.
+            self.dbx.users_get_current_account()
+            self.log("Authenticated successfully!")
+        except:
+            sys.exit("ERROR: Invalid access token; try re-generating an access token from the app console on the web!")
+    
+    def __uploadFile(self, myfile):
+        
+        # Cut off full path to the file if it served.
+        # TODO: this is ugly. Need to redo.
+        fileName = myfile.split("/")
+        fileName = fileName[-1]
+        
+        # Full path to the file in a Dropbox.
+        self.FILE = self.DBOXPATH + fileName
+        
+        with open(myfile, 'rb') as f:
+            self.log("Uploading " + myfile + " to the Dropbox as " + self.FILE + " ...")
+            
+            try:
+                # Trying to upload the file
+                self.dbx.files_upload(f.read(), self.FILE)
+                self.log("File uploaded successfully!")
+            except:
+                sys.exit("ERROR: Can't upload the file " + fileName + "!")
+    
+    def __getStaticLink(self):
+        self.log("Obtaining the static link ...")
+        
+        try:
+            # Calling Dropbox API to create for us a shared link for the file.
+            link = self.dbx.sharing_create_shared_link(self.FILE).url
+            self.log("Static link obtained successfully!")
+            
+            # Replacing a domain so our shared link became hotlinkable.
+            # TODO: This is ulgy. Need to redo.
+            link, a = link.replace("www.dropbox.com", "dl.dropboxusercontent.com").split("?")
+            
+            # Pushing URL to the clipboard.
+            self.__pushToClipboard(link)
+        except:
+            sys.exit("ERROR: Can't obtain static link for the file " + self.FILE + "!")
+    
+    def __findLastScreenshot(self):
+        # Checking if `localpath` option configured in screenpy.js config file.
+        if len(self.LOCALPATH) == 0:
+            sys.exit("ERROR: `localpath` option in `screenpy.js` config file is not set!")
+        
+        # Get list of files in directory.
+        listOfFiles = glob.glob(self.LOCALPATH + "*")
+        
+        # Sort them by modification time and find the latest.
+        latestFile = max(listOfFiles, key=os.path.getmtime)
+        
+        self.log("Found " + latestFile + ".")
+        
+        return latestFile
+        
+    def __pushToClipboard(self, link):
+        try:
+            # Calling basic 'xsel' commant in host OS.
+            os.system("echo '" + link + "' | xsel -ib")
+            self.log("Link is pushed to the clipboard!")
+        except:
+            sys.exit("ERROR: I can't push link to the clipboard!")
+    
+    def log(self, message):
+        # If 'LOG' option in screenpy.js configuration file is set to 'true' only then we log our actions to the STDOUT
+        if(self.LOG == 'true'):
+            # Get a timestamp for clarity
+            timestamp = strftime("%Y-%m-%d %H:%M:%S", gmtime()) 
+            print("[" + timestamp + "] " + message)
+    
+    def main(self, myfile):
+        # The main function.
+        
+        # First lets try to authorize.
+        self.__authorize()
+        
+        # If filename is 'last' then look in default screenshot directory for the newest file.
+        if(myfile == 'last'):
+            self.log("Filename is 'last'. Looking in a default diretory for a newest file ...")
+            myfile = self.__findLastScreenshot()
+        
+        # Upload this file to the Dropbox.
+        self.__uploadFile(myfile)
+        
+        # Obtain static link to that file.
+        self.__getStaticLink()
+        
+        self.log("All done!")
+
+
+if __name__ == '__main__':
+    
+    if(len(sys.argv) == 1):
+        sys.exit("ERROR: You didn't provided a file name!")
+    
+    myfile = sys.argv[1]
+    
+    # The main part.
+    screenpy = Screenpy()
+    
+    # This is where the magic should happens.
+    screenpy.main(myfile)
+
