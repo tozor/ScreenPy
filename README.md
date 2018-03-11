@@ -7,7 +7,7 @@ ScreenPy is a light-weight, small utility what allows you to push your screenhot
 
 ### How to install
 
-Instalation of ScreenPy is quiet simple.
+Installation of ScreenPy is quite simple.
 
 -  Copy the git repo.
 ```bash
@@ -23,7 +23,7 @@ $ python setup.py install
 $ mv screenpy.js ~/.screenpy.js
 $ vim ~/.screenpy.js
 ```
-- Run the unility.
+- Run the utility.
 ```bash
 $ screenpy your-screenshot.jpg
 ```
@@ -43,7 +43,7 @@ This is how it looks:
 And now a bit about every option.
 - **token** (str) - This is your Dropbox API token. Read this on how to generate your token:  https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account/
 - **dboxpath** (str) - This is where your screenshots will be stored in the Dropbox directory tree.
-- **localpath** (str) - This is the default directory on your local PC where screenshots are stored. Why do you might need this option? If you call `screenpy` with a `last` opntion as a screenshot name (i.e `$ screenpy last`) the utility will look into that directory, find the newest screenshot and push it to the Dropbox.
+- **localpath** (str) - This is the default directory on your local PC where screenshots are stored. Why do you might need this option? If you call `screenpy` with a `last` option as a screenshot name (i.e `$ screenpy last`) the utility will look into that directory, find the newest screenshot and push it to the Dropbox.
 - **log** (bool) - This is either `true` or `false`. If it true then you will get logs of what ScreenPy is doing into yout STDOUT. Errors will be reported anyway even if `log` is `false`.
 
 Here is screenpy.js example:
