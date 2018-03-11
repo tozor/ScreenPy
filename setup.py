@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  setup.py
+#  Setup script for easy ScreenPy installation.
 #  
-#  Copyright 2018 Aleksey Slucenko <screenpy@oleksa.me>
+#  Copyright 2018 Aleksey Slucenko <dev@oleksa.me>
 #  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
