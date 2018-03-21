@@ -27,7 +27,7 @@ from setuptools import setup
 setup(
     name='ScreenPy',
     description='Script for uploading screenshots to the dropbox',
-    version='0.0.1',
+    version='0.0.2',
     scripts=['screenpy'],
     install_requires=['dropbox']
 )

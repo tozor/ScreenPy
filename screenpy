@@ -28,6 +28,7 @@ import os
 import sys
 import glob
 import json
+import webbrowser
 import dropbox
 from time import gmtime, strftime
 
@@ -36,6 +37,7 @@ class Screenpy:
     TOKEN= ''   # Dropbox OAuth2 access token; --> https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account/
     DBOXPATH = ''   # Path in Dropbox where screenshots will be stored.
     LOCALPATH = ''  # Path in local directory where screenshots are being saved by default.
+    BEHAVIOR = '' # Depend on this option the URL will be pushed to the clipboard or opened in the web browser.
     LOG = ''    # Do we log out actions to STDOUT or do we not.
     FILE = ''   # This stores path to the file which we are gonna push to the dropbox.
     dbx = ''    # A Dropbox object.
@@ -44,7 +46,9 @@ class Screenpy:
         self.TOKEN = self.__readConfig("token")
         self.DBOXPATH = self.__readConfig("dboxpath")
         self.LOCALPATH = self.__readConfig("localpath")
+        self.BEHAVIOR = self.__readConfig("behavior")
         self.LOG = self.__readConfig("log")
+    
     
     def __readConfig(self, option):
         HOME = os.path.expanduser("~")
@@ -59,6 +63,7 @@ class Screenpy:
         config.close()        
         return data[option]
     
+    
     def __authorize(self):
         self.dbx = dropbox.Dropbox(self.TOKEN)
         try:
@@ -67,6 +72,7 @@ class Screenpy:
             self.log("Authenticated successfully!")
         except:
             sys.exit("ERROR: Invalid access token; try re-generating an access token from the app console on the web!")
+    
     
     def __uploadFile(self, myfile):
         
@@ -88,6 +94,7 @@ class Screenpy:
             except:
                 sys.exit("ERROR: Can't upload the file " + fileName + "!")
     
+    
     def __getStaticLink(self):
         self.log("Obtaining the static link ...")
         
@@ -100,10 +107,17 @@ class Screenpy:
             # TODO: This is ulgy. Need to redo.
             link, a = link.replace("www.dropbox.com", "dl.dropboxusercontent.com").split("?")
             
-            # Pushing URL to the clipboard.
-            self.__pushToClipboard(link)
+            # Open URL in web browser.
+            if self.BEHAVIOR == 'webbrowser':
+                self.log("Behavior is set to `" + self.BEHAVIOR + "`. Calling default web browser.")
+                self.__openUrlInBrowser(link)
+            else:
+                # Pushing URL to the clipboard. Default behavior.
+                self.log("Behavior is set to `" + self.BEHAVIOR + "`. Pushing URL to clipboard (default behavior).")
+                self.__pushToClipboard(link)
         except:
             sys.exit("ERROR: Can't obtain static link for the file " + self.FILE + "!")
+    
     
     def __findLastScreenshot(self):
         # Checking if `localpath` option configured in screenpy.js config file.
@@ -119,7 +133,8 @@ class Screenpy:
         self.log("Found " + latestFile + ".")
         
         return latestFile
-        
+    
+    
     def __pushToClipboard(self, link):
         try:
             # Calling basic 'xsel' commant in host OS.
@@ -128,12 +143,22 @@ class Screenpy:
         except:
             sys.exit("ERROR: I can't push link to the clipboard!")
     
+    
+    def __openUrlInBrowser(self, link):
+        try:
+            webbrowser.open_new_tab(link)
+            self.log("URL opened in the default web browser.")
+        except:
+            sys.exit("Can't open URL in the default web browser!")
+    
+    
     def log(self, message):
         # If 'LOG' option in screenpy.js configuration file is set to 'true' only then we log our actions to the STDOUT
         if(self.LOG == 'true'):
             # Get a timestamp for clarity
             timestamp = strftime("%Y-%m-%d %H:%M:%S", gmtime()) 
             print("[" + timestamp + "] " + message)
+    
     
     def main(self, myfile):
         # The main function.
