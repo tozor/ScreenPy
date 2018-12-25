@@ -13,7 +13,7 @@ Installation of ScreenPy is quite simple.
 ```bash
 $ git clone https://github.com/iUnro/ScreenPy.git
 ```
--  Run the installation script.
+-  Run the installation script. (xsel must be installed)
 ```bash
 $ cd ScreenPy
 $ sudo python setup.py install
@@ -41,16 +41,27 @@ And now a bit about every option.
 - **token** (str) - This is your Dropbox API token. Read this on how to generate your token:  https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account/
 - **dboxpath** (str) - This is where your screenshots will be stored in the Dropbox directory tree.
 - **localpath** (str) - This is the default directory on your local PC where screenshots are stored.
-- **behavior** (str) -If this option is set to `webbrowser` then ScreenPy will call default web browser to open the static URL to the screenshot. Otherwise URL will be pushed to the clipboard.
+- **behavior** (str) -If this option is set to `webbrowser` or `clipboard` then ScreenPy will call default web browser to open the static URL to the screenshot. Otherwise URL will be pushed to the clipboard.
 - **log** (bool) - This is either `true` or `false`. If it true then you will get logs of what ScreenPy is doing into yout STDOUT. Errors will be reported anyway even if `log` is `false`.
 
-Here is screenpy.js example:
+Here is screenpy.js example browser:
 ```js
 {
 "token":"MIIEowIBAAKCAQEAuMvKWymitQvfgRBKcbmP2dhm7EG4R9E0Z6DrPytqDp1WgShM",
 "dboxpath":"/Screenshots/",
 "localpath":"/home/user/Images/",
 "behavior":"webbrowser",
+"log":"true"
+}
+```
+
+Here is screenpy.js example clipboard:
+```js
+{
+"token":"MIIEowIBAAKCAQEAuMvKWymitQvfgRBKcbmP2dhm7EG4R9E0Z6DrPytqDp1WgShM",
+"dboxpath":"/Screenshots/",
+"localpath":"/home/user/Images/",
+"behavior":"clipboard",
 "log":"true"
 }
 ```
